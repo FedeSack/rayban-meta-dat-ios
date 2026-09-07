@@ -39,7 +39,7 @@ Lee esto antes de soñar con App Store.
 
 ## Device / IPA
 
-El simulador ya compile en el Mac (Xcode 26.5). El device y el IPA fallan hasta que haya una identidad de firma Apple.
+El simulador ya compiló en el Mac (Xcode 26.5). El device y el IPA fallan hasta que haya una identidad de firma Apple.
 
 Esto no es distribución App Store. DAT sigue en developer preview.
 
