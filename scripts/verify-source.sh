@@ -31,7 +31,9 @@ require "$root/GlassesDAT/GlassesDAT/Info.plist"
 require "$root/GlassesDAT/GlassesDAT/Resources/mock-feed.mp4"
 require "$root/GlassesDAT/GlassesDATTests/LatencyTests.swift"
 require "$root/scripts/macos-archive-ipa.sh"
+require "$root/scripts/bump-project-build.py"
 require "$root/scripts/exportOptions-development.plist"
+require "$root/docs/VERSIONING.md"
 
 for symbol in Wearables MWDATCore MWDATCamera MWDATMockDevice addCamera StreamConfiguration videoFramePublisher makeUIImage; do
   if ! rg -q "$symbol" "$root/GlassesDAT/GlassesDAT"; then
@@ -61,6 +63,49 @@ if ! rg -q 'generic/platform=iOS' "$root/scripts/macos-archive-ipa.sh"; then
 fi
 if ! rg -q 'allowProvisioningUpdates' "$root/scripts/macos-archive-ipa.sh"; then
   echo "macos-archive-ipa.sh missing -allowProvisioningUpdates"
+  fail=1
+fi
+if ! rg -q 'BUILD_NUMBER' "$root/scripts/macos-archive-ipa.sh"; then
+  echo "macos-archive-ipa.sh missing BUILD_NUMBER override"
+  fail=1
+fi
+if ! rg -q 'bump-project-build.py' "$root/scripts/macos-archive-ipa.sh"; then
+  echo "macos-archive-ipa.sh missing CURRENT_PROJECT_VERSION bump"
+  fail=1
+fi
+if ! rg -q 'MARKETING_VERSION="\$marketing_version"' "$root/scripts/macos-archive-ipa.sh"; then
+  echo "macos-archive-ipa.sh missing MARKETING_VERSION pass-through"
+  fail=1
+fi
+if ! rg -q 'CURRENT_PROJECT_VERSION="\$project_build"' "$root/scripts/macos-archive-ipa.sh"; then
+  echo "macos-archive-ipa.sh missing CURRENT_PROJECT_VERSION pass-through"
+  fail=1
+fi
+if ! rg -q 'MARKETING_VERSION' "$root/docs/VERSIONING.md"; then
+  echo "docs/VERSIONING.md missing MARKETING_VERSION"
+  fail=1
+fi
+if ! rg -q 'CURRENT_PROJECT_VERSION' "$root/docs/VERSIONING.md"; then
+  echo "docs/VERSIONING.md missing CURRENT_PROJECT_VERSION"
+  fail=1
+fi
+if ! rg -q 'vMAJOR\.MINOR\.PATCH\+BUILD' "$root/docs/VERSIONING.md"; then
+  echo "docs/VERSIONING.md missing optional git tag format"
+  fail=1
+fi
+if ! python3 -c '
+import re, pathlib, sys
+text = pathlib.Path(sys.argv[1]).read_text()
+markets = re.findall(r"MARKETING_VERSION = ([^;]+);", text)
+builds = re.findall(r"CURRENT_PROJECT_VERSION = ([^;]+);", text)
+semver = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
+pint = re.compile(r"^[1-9][0-9]*$")
+if not markets or any(not semver.fullmatch(v.strip()) for v in markets):
+    raise SystemExit("pbxproj MARKETING_VERSION is not MAJOR.MINOR.PATCH")
+if not builds or any(not pint.fullmatch(v.strip()) for v in builds):
+    raise SystemExit("pbxproj CURRENT_PROJECT_VERSION is not a positive integer")
+' "$pbx"; then
+  echo "pbxproj version fields are not locked to semver + integer build"
   fail=1
 fi
 if ! rg -q '0 valid identities found' "$root/scripts/macos-archive-ipa.sh"; then
@@ -154,6 +199,56 @@ assert ms(0.04, 12.020, 12.001) == 19
 assert ms(None, 5.010, 5.000) == 10
 assert ms(2000, 1999.5, 1999.4) == 0
 print("latency arithmetic ok")
+PY
+
+python3 - "$root/scripts/bump-project-build.py" "$pbx" <<'PY'
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+helper, pbx = sys.argv[1], sys.argv[2]
+src = Path(pbx).read_text()
+assert "MARKETING_VERSION = 1.0.0;" in src
+assert "CURRENT_PROJECT_VERSION = 1;" in src
+
+def run(path, extra, expect_ok):
+    cmd = [sys.executable, helper, str(path), *extra]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if expect_ok and result.returncode != 0:
+        raise SystemExit(result.stderr or result.stdout or "bump failed")
+    if not expect_ok and result.returncode == 0:
+        raise SystemExit(f"expected failure for {extra}, got:\n{result.stdout}")
+    return result
+
+with tempfile.TemporaryDirectory() as tmp:
+    copy = Path(tmp) / "project.pbxproj"
+    copy.write_text(src)
+
+    dry = run(copy, ["--dry-run"], True)
+    assert "CURRENT_PROJECT_VERSION=2" in dry.stdout
+    assert "MARKETING_VERSION=1.0.0" in dry.stdout
+    assert "git_tag=v1.0.0+2" in dry.stdout
+    assert "CURRENT_PROJECT_VERSION = 1;" in copy.read_text()
+
+    first = run(copy, [], True)
+    assert "CURRENT_PROJECT_VERSION=2" in first.stdout
+    assert copy.read_text().count("CURRENT_PROJECT_VERSION = 2;") == 4
+    assert "CURRENT_PROJECT_VERSION = 1;" not in copy.read_text()
+
+    reuse = run(copy, ["--build-number", "2"], False)
+    assert "never reuse or decrease" in reuse.stderr
+    decrease = run(copy, ["--build-number", "1"], False)
+    assert "never reuse or decrease" in decrease.stderr
+    bad = run(copy, ["--build-number", "1.0"], False)
+    assert "positive integer" in bad.stderr
+
+    skip = run(copy, ["--build-number", "10"], True)
+    assert "CURRENT_PROJECT_VERSION=10" in skip.stdout
+    assert "version=1.0.0 (10)" in skip.stdout
+    assert copy.read_text().count("CURRENT_PROJECT_VERSION = 10;") == 4
+
+print("build bump helper ok")
 PY
 
 if [[ "$fail" -ne 0 ]]; then
