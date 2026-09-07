@@ -1,5 +1,6 @@
 import CoreMedia
 import Foundation
+import QuartzCore
 
 enum Latency {
     static let hostClockMinimumSeconds: Double = 100
