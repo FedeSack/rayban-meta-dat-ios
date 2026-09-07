@@ -8,7 +8,7 @@ struct FrameSurface: UIViewRepresentable {
         let view = UIImageView()
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
-        view.backgroundColor = .black
+        view.backgroundColor = UIColor(DatColor.background)
         return view
     }
 

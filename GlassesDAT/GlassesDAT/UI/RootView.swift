@@ -12,5 +12,6 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .background(DatColor.background.ignoresSafeArea())
     }
 }

@@ -24,6 +24,9 @@ require "$root/GlassesDAT/GlassesDAT/UI/ConnectView.swift"
 require "$root/GlassesDAT/GlassesDAT/UI/LiveView.swift"
 require "$root/GlassesDAT/GlassesDAT/UI/FrameSurface.swift"
 require "$root/GlassesDAT/GlassesDAT/UI/LatencyHUD.swift"
+require "$root/GlassesDAT/GlassesDAT/UI/DatTheme.swift"
+require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/DatBackground.colorset/Contents.json"
+require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/DatAccent.colorset/Contents.json"
 require "$root/GlassesDAT/GlassesDAT/Info.plist"
 require "$root/GlassesDAT/GlassesDAT/Resources/mock-feed.mp4"
 require "$root/GlassesDAT/GlassesDATTests/LatencyTests.swift"
@@ -52,7 +55,7 @@ if ! rg -q 'version = 0.9.0' "$pbx"; then
   fail=1
 fi
 
-for source in GlassesDATApp.swift Session.swift Stream.swift Latency.swift GlassesSession.swift MockPath.swift RootView.swift ConnectView.swift LiveView.swift FrameSurface.swift LatencyHUD.swift DatButtonStyle.swift LatencyTests.swift mock-feed.mp4; do
+for source in GlassesDATApp.swift Session.swift Stream.swift Latency.swift GlassesSession.swift MockPath.swift RootView.swift ConnectView.swift LiveView.swift FrameSurface.swift LatencyHUD.swift DatButtonStyle.swift DatTheme.swift LatencyTests.swift mock-feed.mp4; do
   if ! rg -q "$source" "$pbx"; then
     echo "pbxproj missing $source"
     fail=1
@@ -66,6 +69,33 @@ fi
 
 if ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,codec_tag_string,width,height,r_frame_rate -of csv=p=0 "$root/GlassesDAT/GlassesDAT/Resources/mock-feed.mp4" | rg -q 'hevc,hvc1,504,896,24/1'; then
   echo "mock-feed.mp4 is not HEVC hvc1 504x896@24"
+  fail=1
+fi
+
+for token in 0x0A 0x0B 0x1C 0x1E 0x00 0x6C 0xEB 0x8E 0x93 0x30 0xD1 0x58 0xFF 0x45 0x3A; do
+  if ! rg -q "$token" "$root/GlassesDAT/GlassesDAT/Assets.xcassets"; then
+    echo "missing color component $token"
+    fail=1
+  fi
+done
+
+if ! rg -q 'static let safeTop: CGFloat = 59' "$root/GlassesDAT/GlassesDAT/UI/DatTheme.swift"; then
+  echo "missing Figma safeTop 59"
+  fail=1
+fi
+if ! rg -q 'static let liveButtonWidth: CGFloat = 345' "$root/GlassesDAT/GlassesDAT/UI/DatTheme.swift"; then
+  echo "missing Figma live button width 345"
+  fail=1
+fi
+if ! rg -q 'static let latencyTop: CGFloat = 67' "$root/GlassesDAT/GlassesDAT/UI/DatTheme.swift"; then
+  echo "missing Figma latency top 67"
+  fail=1
+fi
+
+if rg -n "func startStream|func connectMock|func registerWithMetaAI|addCamera|Wearables.configure" "$root/GlassesDAT/GlassesDAT/Session/GlassesSession.swift" >/dev/null; then
+  :
+else
+  echo "DAT session methods missing"
   fail=1
 fi
 

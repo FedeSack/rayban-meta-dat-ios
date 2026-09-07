@@ -22,9 +22,9 @@ enum Session: Equatable {
 
     var showsLive: Bool {
         switch self {
-        case .ready, .connecting, .live:
+        case .connecting, .live:
             return true
-        case .idle, .registering, .failed:
+        case .idle, .registering, .ready, .failed:
             return false
         }
     }

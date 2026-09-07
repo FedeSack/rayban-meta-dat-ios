@@ -4,38 +4,26 @@ struct DatButtonStyle: ButtonStyle {
     enum Kind {
         case primary
         case secondary
-        case ghost
     }
 
     var kind: Kind
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 16, weight: .semibold))
+            .font(DatFont.button(kind == .primary ? .semibold : .medium))
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .foregroundStyle(foreground)
-            .background(background, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .opacity(configuration.isPressed ? 0.7 : 1)
-    }
-
-    private var foreground: Color {
-        switch kind {
-        case .primary:
-            return .black
-        case .secondary, .ghost:
-            return .white
-        }
+            .frame(height: DatMetrics.buttonHeight)
+            .background(background, in: RoundedRectangle(cornerRadius: DatMetrics.buttonRadius, style: .continuous))
+            .opacity(configuration.isPressed ? 0.72 : 1)
     }
 
     private var background: Color {
         switch kind {
         case .primary:
-            return .white
+            return DatColor.accent
         case .secondary:
-            return Color.white.opacity(0.12)
-        case .ghost:
-            return Color.white.opacity(0.06)
+            return DatColor.surface
         }
     }
 }

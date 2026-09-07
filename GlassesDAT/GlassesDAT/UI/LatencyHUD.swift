@@ -5,11 +5,11 @@ struct LatencyHUD: View {
 
     var body: some View {
         Text(label)
-            .font(.system(size: 15, weight: .semibold, design: .monospaced))
+            .font(DatFont.latency())
             .foregroundStyle(.white)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(.black.opacity(0.72), in: Capsule())
+            .padding(.horizontal, DatMetrics.latencyPadH)
+            .padding(.vertical, DatMetrics.latencyPadV)
+            .background(DatColor.latencyFill, in: RoundedRectangle(cornerRadius: DatMetrics.latencyRadius, style: .continuous))
     }
 
     private var label: String {
