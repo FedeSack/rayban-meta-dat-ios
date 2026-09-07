@@ -30,6 +30,8 @@ require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/DatAccent.colorset/Contents
 require "$root/GlassesDAT/GlassesDAT/Info.plist"
 require "$root/GlassesDAT/GlassesDAT/Resources/mock-feed.mp4"
 require "$root/GlassesDAT/GlassesDATTests/LatencyTests.swift"
+require "$root/scripts/macos-archive-ipa.sh"
+require "$root/scripts/exportOptions-development.plist"
 
 for symbol in Wearables MWDATCore MWDATCamera MWDATMockDevice addCamera StreamConfiguration videoFramePublisher makeUIImage; do
   if ! rg -q "$symbol" "$root/GlassesDAT/GlassesDAT"; then
@@ -44,6 +46,27 @@ for key in MetaAppID ClientToken TeamID AppLinkURLScheme com.meta.ar.wearable gl
     fail=1
   fi
 done
+
+if ! rg -q 'FKR9U47TSF' "$root/scripts/exportOptions-development.plist"; then
+  echo "exportOptions-development.plist missing team FKR9U47TSF"
+  fail=1
+fi
+if ! rg -q '<string>development</string>' "$root/scripts/exportOptions-development.plist"; then
+  echo "exportOptions-development.plist missing method development"
+  fail=1
+fi
+if ! rg -q 'generic/platform=iOS' "$root/scripts/macos-archive-ipa.sh"; then
+  echo "macos-archive-ipa.sh missing generic iOS destination"
+  fail=1
+fi
+if ! rg -q 'allowProvisioningUpdates' "$root/scripts/macos-archive-ipa.sh"; then
+  echo "macos-archive-ipa.sh missing -allowProvisioningUpdates"
+  fail=1
+fi
+if ! rg -q '0 valid identities found' "$root/scripts/macos-archive-ipa.sh"; then
+  echo "macos-archive-ipa.sh missing signing-identity failure"
+  fail=1
+fi
 
 if ! rg -q 'https://github.com/facebook/meta-wearables-dat-ios' "$pbx"; then
   echo "pbxproj missing official DAT SPM URL"
