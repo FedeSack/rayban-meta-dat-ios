@@ -78,6 +78,27 @@ if ! rg -q 'version = 0.9.0' "$pbx"; then
   fail=1
 fi
 
+if ! rg -q '<string>Bobi Glasses</string>' "$plist"; then
+  echo "Info.plist CFBundleDisplayName is not Bobi Glasses"
+  fail=1
+fi
+if ! rg -q 'PRODUCT_BUNDLE_IDENTIFIER = com.bobilabs.glasses;' "$pbx"; then
+  echo "pbxproj missing app bundle com.bobilabs.glasses"
+  fail=1
+fi
+if ! rg -q 'PRODUCT_BUNDLE_IDENTIFIER = com.bobilabs.glasses.tests;' "$pbx"; then
+  echo "pbxproj missing tests bundle com.bobilabs.glasses.tests"
+  fail=1
+fi
+if ! rg -q 'DEVELOPMENT_TEAM = FKR9U47TSF;' "$pbx"; then
+  echo "pbxproj missing DEVELOPMENT_TEAM FKR9U47TSF"
+  fail=1
+fi
+if rg -n 'com\.bobilabs\.glassesdat|com\.fedesack\.glassesdat' "$pbx" "$root/README.md"; then
+  echo "leftover glassesdat / fedesack bundle identifier"
+  fail=1
+fi
+
 for source in GlassesDATApp.swift Session.swift Stream.swift Latency.swift GlassesSession.swift MockPath.swift RootView.swift ConnectView.swift LiveView.swift FrameSurface.swift LatencyHUD.swift DatButtonStyle.swift DatTheme.swift LatencyTests.swift mock-feed.mp4; do
   if ! rg -q "$source" "$pbx"; then
     echo "pbxproj missing $source"

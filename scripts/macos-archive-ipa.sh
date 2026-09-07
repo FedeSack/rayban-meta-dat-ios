@@ -9,7 +9,7 @@ project="$root/GlassesDAT/GlassesDAT.xcodeproj"
 scheme="GlassesDAT"
 configuration="${CONFIGURATION:-Release}"
 team="${DEVELOPMENT_TEAM:-FKR9U47TSF}"
-bundle="${PRODUCT_BUNDLE_IDENTIFIER:-com.bobilabs.glassesdat}"
+bundle="${PRODUCT_BUNDLE_IDENTIFIER:-com.bobilabs.glasses}"
 export_method="${EXPORT_METHOD:-development}"
 template="$root/scripts/exportOptions-development.plist"
 build_dir="${BUILD_DIR:-$root/build}"
@@ -25,13 +25,13 @@ Archives GlassesDAT (generic iOS device) and exports an IPA.
 
 Required on the Mac:
   1. Xcode → Settings → Accounts → sign in (team FKR9U47TSF / Bobi Labs)
-  2. Automatic signing for com.bobilabs.glassesdat
-  3. App ID com.bobilabs.glassesdat exists, or Xcode creates it
+  2. Automatic signing for com.bobilabs.glasses
+  3. App ID com.bobilabs.glasses exists, or Xcode creates it
 
 Environment:
   EXPORT_METHOD                 development (default) or ad-hoc
   DEVELOPMENT_TEAM              default FKR9U47TSF
-  PRODUCT_BUNDLE_IDENTIFIER     default com.bobilabs.glassesdat
+  PRODUCT_BUNDLE_IDENTIFIER     default com.bobilabs.glasses
   CONFIGURATION                 default Release
   BUILD_DIR / ARCHIVE_PATH / EXPORT_PATH
   ALLOW_PROVISIONING_UPDATES    1 (default) passes -allowProvisioningUpdates

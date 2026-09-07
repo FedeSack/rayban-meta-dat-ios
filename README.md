@@ -1,6 +1,6 @@
 # rayban-meta-dat-ios
 
-App nativa mínima en SwiftUI que abre la cámara de Ray-Ban Meta / Meta AI glasses con el [Device Access Toolkit oficial para iOS](https://github.com/facebook/meta-wearables-dat-ios) (SPM 0.9.0). El overlay muestra la latencia gafas a pantalla en milisegundos.
+**Bobi Glasses** (marca Bobi Labs) es la app nativa mínima en SwiftUI que abre la cámara de Ray-Ban Meta / Meta AI glasses con el [Device Access Toolkit oficial para iOS](https://github.com/facebook/meta-wearables-dat-ios) (SPM 0.9.0). El overlay muestra la latencia gafas a pantalla en milisegundos.
 
 Este README es para Federico Sack. El proyecto vive en `GlassesDAT/GlassesDAT.xcodeproj`.
 
@@ -31,7 +31,7 @@ Lee esto antes de soñar con App Store.
 1. Instala Xcode 15 o posterior. El target es iOS 17.
 2. Instala Meta AI en un iPhone. Empareja las gafas, o usa Mock en el simulador.
 3. Abre `GlassesDAT/GlassesDAT.xcodeproj`.
-4. El proyecto ya firma con el Apple Team `FKR9U47TSF` (Federico Sack / marca **Bobi Labs**, namespace `com.bobilabs`). Bundle IDs: `com.bobilabs.glassesdat` y `com.bobilabs.glassesdat.tests`. `Info.plist` pone `TeamID` = `$(DEVELOPMENT_TEAM)`. Si queda vacío, `startRegistration()` puede fallar con configuración inválida.
+4. El proyecto ya firma con el Apple Team `FKR9U47TSF` (Federico Sack / marca **Bobi Labs**, namespace `com.bobilabs`). El nombre en Springboard es **Bobi Glasses** (`CFBundleDisplayName`). Bundle IDs: `com.bobilabs.glasses` y `com.bobilabs.glasses.tests`. `Info.plist` pone `TeamID` = `$(DEVELOPMENT_TEAM)`. Si queda vacío, `startRegistration()` puede fallar con configuración inválida.
 5. Deja `MetaAppID` = `0` y `ClientToken` = `developer-mode-placeholder` mientras uses Developer Mode. Para un release channel, reemplázalos con los valores del Wearables Developer Center.
 6. El scheme `glassesdat` debe coincidir con `AppLinkURLScheme` = `glassesdat://` y con `CFBundleURLSchemes`.
 7. Resuelve el paquete SPM `https://github.com/facebook/meta-wearables-dat-ios` en 0.9.0. Productos: `MWDATCore`, `MWDATCamera`, `MWDATMockDevice`.
@@ -44,7 +44,7 @@ El simulador ya compiló en el Mac (Xcode 26.5). El device y el IPA fallan hasta
 Esto no es distribución App Store. DAT sigue en developer preview.
 
 1. En el Mac: Xcode → Settings → Accounts → inicia sesión con el Apple ID del team `FKR9U47TSF` (Bobi Labs). Deja que Xcode gestione el certificado Apple Development. No inventes certificados a mano.
-2. Abre `GlassesDAT/GlassesDAT.xcodeproj` → Signing & Capabilities → Automatic signing, team `FKR9U47TSF`, bundle `com.bobilabs.glassesdat`. El App ID `com.bobilabs.glassesdat` debe existir en el Apple Developer portal, o Xcode lo crea con Automatic signing.
+2. Abre `GlassesDAT/GlassesDAT.xcodeproj` → Signing & Capabilities → Automatic signing, team `FKR9U47TSF`, bundle `com.bobilabs.glasses`. El App ID `com.bobilabs.glasses` debe existir en el Apple Developer portal, o Xcode lo crea con Automatic signing.
 3. Archive + IPA de development (o ad-hoc):
 
 ```bash
