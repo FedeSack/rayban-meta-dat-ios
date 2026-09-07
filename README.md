@@ -31,7 +31,7 @@ Lee esto antes de soñar con App Store.
 1. Instala Xcode 15 o posterior. El target es iOS 17.
 2. Instala Meta AI en un iPhone. Empareja las gafas, o usa Mock en el simulador.
 3. Abre `GlassesDAT/GlassesDAT.xcodeproj`.
-4. En Signing & Capabilities, elige tu Team. `Info.plist` pone `TeamID` = `$(DEVELOPMENT_TEAM)`. Si queda vacío, `startRegistration()` puede fallar con configuración inválida. Pega tu Team ID de 10 caracteres.
+4. El proyecto ya firma con el Apple Team `FKR9U47TSF` (Federico Sack / marca **Bobi Labs**, namespace `com.bobilabs`). Bundle IDs: `com.bobilabs.glassesdat` y `com.bobilabs.glassesdat.tests`. `Info.plist` pone `TeamID` = `$(DEVELOPMENT_TEAM)`. Si queda vacío, `startRegistration()` puede fallar con configuración inválida.
 5. Deja `MetaAppID` = `0` y `ClientToken` = `developer-mode-placeholder` mientras uses Developer Mode. Para un release channel, reemplázalos con los valores del Wearables Developer Center.
 6. El scheme `glassesdat` debe coincidir con `AppLinkURLScheme` = `glassesdat://` y con `CFBundleURLSchemes`.
 7. Resuelve el paquete SPM `https://github.com/facebook/meta-wearables-dat-ios` en 0.9.0. Productos: `MWDATCore`, `MWDATCamera`, `MWDATMockDevice`.
