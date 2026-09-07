@@ -4,6 +4,16 @@ import MWDATCore
 import Observation
 import UIKit
 
+/// Task handle reachable from `deinit`, which is nonisolated on a `@MainActor` type.
+private final class RegistrationTaskHandle: @unchecked Sendable {
+    var task: Task<Void, Never>?
+
+    func cancel() {
+        task?.cancel()
+        task = nil
+    }
+}
+
 @Observable
 @MainActor
 final class GlassesSession {
@@ -17,18 +27,19 @@ final class GlassesSession {
     private var camera: MWDATCamera.Camera?
     private let sessionTokens = ListenerTokenBag()
     private let streamTokens = ListenerTokenBag()
-    private var registrationTask: Task<Void, Never>?
+    @ObservationIgnored
+    nonisolated private let registrationTask = RegistrationTaskHandle()
 
     init() {
-        registrationTask = Task { [weak self] in
+        registrationTask.task = Task { @MainActor [weak self] in
             for await state in Wearables.shared.registrationStateStream() {
-                await self?.applyRegistration(state)
+                self?.applyRegistration(state)
             }
         }
     }
 
     deinit {
-        registrationTask?.cancel()
+        registrationTask.cancel()
     }
 
     func handleOpenURL(_ url: URL) {
