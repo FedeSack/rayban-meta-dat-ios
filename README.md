@@ -53,6 +53,22 @@ Esto no es distribución App Store. DAT sigue en developer preview.
 
 El IPA queda en `build/ipa/`. El script usa `scripts/exportOptions-development.plist` (`method` = `development`, team `FKR9U47TSF`). Para ad-hoc: `EXPORT_METHOD=ad-hoc ./scripts/macos-archive-ipa.sh`. Pasa `-allowProvisioningUpdates` para que Xcode refresque el perfil. Si no hay identidad de firma, falla con instrucciones y no sigue.
 
+Antes del archive el script sube `CURRENT_PROJECT_VERSION` en +1 (o usa `BUILD_NUMBER` si es un entero mayor al actual) e imprime marketing + build. Detalle en [docs/VERSIONING.md](docs/VERSIONING.md).
+
+## Versionado
+
+TestFlight / App Store Connect rechazan un IPA si `CFBundleVersion` ya se usó. Estas reglas evitan reutilizar o saltar builds al azar. Política completa: [docs/VERSIONING.md](docs/VERSIONING.md).
+
+- `MARKETING_VERSION` (`CFBundleShortVersionString`): semver `MAJOR.MINOR.PATCH`, visible para el usuario. Parte de **1.0.0** (migración desde `1.0`). Se sube en un PR cuando el cambio es user-facing.
+- `CURRENT_PROJECT_VERSION` (`CFBundleVersion`): entero positivo que **solo aumenta**. Cada upload a TestFlight lleva un número nuevo y mayor. Nunca reutilizar ni bajar. Baseline actual: `1`.
+- El marketing se toca en PRs. El build lo incrementa `scripts/macos-archive-ipa.sh` en el archive/upload, no commits sueltos.
+- Tag opcional cuando el build entra a TestFlight: `vMAJOR.MINOR.PATCH+BUILD` (ejemplo `v1.0.0+2`).
+
+```bash
+./scripts/macos-archive-ipa.sh
+BUILD_NUMBER=8 ./scripts/macos-archive-ipa.sh   # si TestFlight ya usó un número más alto
+```
+
 ## Flujo DAT que usa la app
 
 Sigue el sample [CameraAccess](https://github.com/facebook/meta-wearables-dat-ios/tree/main/samples/CameraAccess) y las skills oficiales de getting-started, camera-streaming, permissions-registration y mockdevice-testing.
@@ -82,6 +98,7 @@ Android sí publica `presentationTimeUs`. iOS no. El número del HUD es honesto 
 - `GlassesDAT/GlassesDAT/UI` son las dos pantallas SwiftUI más el HUD.
 - `GlassesDAT/GlassesDAT/Info.plist` tiene los placeholders `MetaAppID`, `ClientToken`, `TeamID`, `AppLinkURLScheme`.
 - `GlassesDAT/GlassesDATTests/LatencyTests.swift` cubre la aritmética del HUD.
+- `docs/VERSIONING.md` fija marketing semver y el build monotónico de TestFlight.
 
 ## Qué no está
 
