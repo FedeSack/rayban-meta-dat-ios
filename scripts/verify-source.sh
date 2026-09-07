@@ -27,7 +27,11 @@ require "$root/GlassesDAT/GlassesDAT/UI/LatencyHUD.swift"
 require "$root/GlassesDAT/GlassesDAT/UI/DatTheme.swift"
 require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/DatBackground.colorset/Contents.json"
 require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/DatAccent.colorset/Contents.json"
+require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/AppIcon.appiconset/Contents.json"
+require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/AppIcon.appiconset/AppIcon-60@2x.png"
+require "$root/GlassesDAT/GlassesDAT/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png"
 require "$root/GlassesDAT/GlassesDAT/Info.plist"
+require "$root/scripts/generate-app-icons.py"
 require "$root/GlassesDAT/GlassesDAT/Resources/mock-feed.mp4"
 require "$root/GlassesDAT/GlassesDATTests/LatencyTests.swift"
 require "$root/scripts/macos-archive-ipa.sh"
@@ -127,6 +131,18 @@ if ! rg -q '<string>Bobi Glasses</string>' "$plist"; then
   echo "Info.plist CFBundleDisplayName is not Bobi Glasses"
   fail=1
 fi
+if ! rg -q '<key>CFBundleIconName</key>' "$plist" || ! awk '/<key>CFBundleIconName<\/key>/{getline; exit !($0 ~ /<string>AppIcon<\/string>/)}' "$plist"; then
+  echo "Info.plist missing CFBundleIconName = AppIcon"
+  fail=1
+fi
+if ! rg -q 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;' "$pbx"; then
+  echo "pbxproj missing ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon"
+  fail=1
+fi
+if ! rg -q 'INFOPLIST_KEY_CFBundleIconName = AppIcon;' "$pbx"; then
+  echo "pbxproj missing INFOPLIST_KEY_CFBundleIconName = AppIcon"
+  fail=1
+fi
 if ! rg -q 'PRODUCT_BUNDLE_IDENTIFIER = com.bobilabs.glasses;' "$pbx"; then
   echo "pbxproj missing app bundle com.bobilabs.glasses"
   fail=1
@@ -187,6 +203,54 @@ else
   echo "DAT session methods missing"
   fail=1
 fi
+
+python3 - "$root/GlassesDAT/GlassesDAT/Assets.xcassets/AppIcon.appiconset" <<'PY'
+import json
+import struct
+import sys
+from pathlib import Path
+
+iconset = Path(sys.argv[1])
+manifest = json.loads((iconset / "Contents.json").read_text())
+required = {
+    ("iphone", "20x20", "2x", 40, "AppIcon-20@2x.png"),
+    ("iphone", "20x20", "3x", 60, "AppIcon-20@3x.png"),
+    ("iphone", "29x29", "2x", 58, "AppIcon-29@2x.png"),
+    ("iphone", "29x29", "3x", 87, "AppIcon-29@3x.png"),
+    ("iphone", "40x40", "2x", 80, "AppIcon-40@2x.png"),
+    ("iphone", "40x40", "3x", 120, "AppIcon-40@3x.png"),
+    ("iphone", "60x60", "2x", 120, "AppIcon-60@2x.png"),
+    ("iphone", "60x60", "3x", 180, "AppIcon-60@3x.png"),
+    ("ios-marketing", "1024x1024", "1x", 1024, "AppIcon-1024.png"),
+}
+found = set()
+for image in manifest.get("images", []):
+    found.add(
+        (
+            image.get("idiom"),
+            image.get("size"),
+            image.get("scale"),
+            image.get("filename"),
+        )
+    )
+
+for idiom, size, scale, pixels, filename in sorted(required):
+    if (idiom, size, scale, filename) not in found:
+        raise SystemExit(f"AppIcon Contents.json missing {idiom} {size} {scale} ({filename})")
+    path = iconset / filename
+    if not path.is_file():
+        raise SystemExit(f"missing AppIcon PNG {filename}")
+    data = path.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise SystemExit(f"{filename} is not a PNG")
+    width, height, bit, color = struct.unpack(">IIBB", data[16:26])
+    if (width, height) != (pixels, pixels):
+        raise SystemExit(f"{filename} is {width}x{height}, expected {pixels}x{pixels}")
+    if bit != 8 or color != 2:
+        raise SystemExit(f"{filename} must be 8-bit RGB without alpha (ITMS marketing icon)")
+
+print("AppIcon catalog ok (includes 120x120 60pt@2x, RGB, no alpha)")
+PY
 
 python3 - <<'PY'
 def ms(pts, now, received):
