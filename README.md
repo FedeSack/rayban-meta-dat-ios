@@ -37,6 +37,22 @@ Lee esto antes de soñar con App Store.
 7. Resuelve el paquete SPM `https://github.com/facebook/meta-wearables-dat-ios` en 0.9.0. Productos: `MWDATCore`, `MWDATCamera`, `MWDATMockDevice`.
 8. Corre en iPhone para Meta AI. El simulador sirve para Mock.
 
+## Device / IPA
+
+El simulador ya compiló en el Mac (Xcode 26.5). El device y el IPA fallan hasta que haya una identidad de firma Apple.
+
+Esto no es distribución App Store. DAT sigue en developer preview.
+
+1. En el Mac: Xcode → Settings → Accounts → inicia sesión con el Apple ID del team `FKR9U47TSF` (Bobi Labs). Deja que Xcode gestione el certificado Apple Development. No inventes certificados a mano.
+2. Abre `GlassesDAT/GlassesDAT.xcodeproj` → Signing & Capabilities → Automatic signing, team `FKR9U47TSF`, bundle `com.bobilabs.glassesdat`. El App ID `com.bobilabs.glassesdat` debe existir en el Apple Developer portal, o Xcode lo crea con Automatic signing.
+3. Archive + IPA de development (o ad-hoc):
+
+```bash
+./scripts/macos-archive-ipa.sh
+```
+
+El IPA queda en `build/ipa/`. El script usa `scripts/exportOptions-development.plist` (`method` = `development`, team `FKR9U47TSF`). Para ad-hoc: `EXPORT_METHOD=ad-hoc ./scripts/macos-archive-ipa.sh`. Pasa `-allowProvisioningUpdates` para que Xcode refresque el perfil. Si no hay identidad de firma, falla con instrucciones y no sigue.
+
 ## Flujo DAT que usa la app
 
 Sigue el sample [CameraAccess](https://github.com/facebook/meta-wearables-dat-ios/tree/main/samples/CameraAccess) y las skills oficiales de getting-started, camera-streaming, permissions-registration y mockdevice-testing.
