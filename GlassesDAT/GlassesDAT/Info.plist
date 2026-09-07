@@ -68,6 +68,14 @@
 	<string>Se usa para conectar las gafas Meta Wearables.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Se usa para conectar las gafas Meta Wearables.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Bobi Glasses displays the live camera stream from your Ray-Ban Meta glasses via the Meta Wearables Device Access Toolkit.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Needed to find Ray-Ban Meta glasses on the local network and stream the glasses camera over Wi-Fi via the Meta Wearables Device Access Toolkit.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_bonjour._tcp</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
