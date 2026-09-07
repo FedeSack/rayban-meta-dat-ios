@@ -127,6 +127,23 @@ if ! rg -q 'version = 0.9.0' "$pbx"; then
   fail=1
 fi
 
+if ! awk '/<key>NSCameraUsageDescription<\/key>/{getline; exit !($0 ~ /<string>.+<\/string>/)}' "$plist"; then
+  echo "Info.plist missing NSCameraUsageDescription purpose string"
+  fail=1
+fi
+if ! awk '/<key>NSLocalNetworkUsageDescription<\/key>/{getline; exit !($0 ~ /<string>.+<\/string>/)}' "$plist"; then
+  echo "Info.plist missing NSLocalNetworkUsageDescription purpose string"
+  fail=1
+fi
+if ! awk '/<key>NSBluetoothAlwaysUsageDescription<\/key>/{getline; exit !($0 ~ /<string>.+<\/string>/)}' "$plist"; then
+  echo "Info.plist missing NSBluetoothAlwaysUsageDescription purpose string"
+  fail=1
+fi
+if ! awk '/<key>NSBluetoothPeripheralUsageDescription<\/key>/{getline; exit !($0 ~ /<string>.+<\/string>/)}' "$plist"; then
+  echo "Info.plist missing NSBluetoothPeripheralUsageDescription purpose string"
+  fail=1
+fi
+
 if ! rg -q '<string>Bobi Glasses</string>' "$plist"; then
   echo "Info.plist CFBundleDisplayName is not Bobi Glasses"
   fail=1
